@@ -41,7 +41,7 @@ Once loaded, traverse to your Jellyfin Dashboard -> Plugins -> Catalog -> **Scre
 2. Select whether their viewing period should renew on a **Daily** or **Weekly** cycle.
 3. Toggle their **Global Rule**, restricting their total aggregated media watch time.
 4. Scroll to configure rules granularly over specific libraries.
-5. Save the configuration. 
+5. Save the configuration.
 
 Users who exceed their allocated limits will be abruptly stopped upon starting a video or continuously when a time boundary is crossed.
 
@@ -53,3 +53,4 @@ Users who exceed their allocated limits will be abruptly stopped upon starting a
 ## Licensing
 
 Licensed under the GPLv3 to align with Jellyfin plugin specifications. All proprietary plugin rules enforce GPLv3 distribution compliance naturally natively when packaged.
+
