@@ -1,0 +1,17 @@
+---
+name: "ScreentimeManager"
+guid: "2e773ab9-a346-4850-b13b-45fca7246ec4"
+version: "1.0.0.0"
+targetAbi: "10.9.0.0"
+framework: "net8.0"
+overview: "Manages screen time for users"
+description: >
+  This plugin allows you to set screen time limits for users dependent on specific libraries
+  and automatically locks access to those libraries when the user reaches their limit.
+  It also allows you to set a daily reset time for the screen time.
+category: "General"
+owner: "jellyfin"
+artifacts:
+- "Jellyfin.Plugin.ScreentimeManager.dll"
+changelog: >
+  changelog
