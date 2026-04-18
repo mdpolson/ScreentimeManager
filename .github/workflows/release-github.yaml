@@ -1,0 +1,48 @@
+name: '📦 Build & Release to GitHub'
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers on tags like v1.0, v20.15.10
+  workflow_dispatch:
+
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build and Publish
+        run: dotnet publish Jellyfin.Plugin.ScreentimeManager.sln --configuration Release --output ./publish /p:GenerateFullPaths=true /consoleloggerparameters:NoSummary
+        
+      - name: Zip Release Artifact
+        run: |
+          cd publish
+          zip -r ../Jellyfin.Plugin.ScreentimeManager.zip *
+          cd ..
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScreentimeManager
+          path: Jellyfin.Plugin.ScreentimeManager.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            Jellyfin.Plugin.ScreentimeManager.zip
+          generate_release_notes: true
