@@ -25,11 +25,12 @@ jobs:
         run: dotnet restore
         
       - name: Build and Publish
-        run: dotnet publish Jellyfin.Plugin.ScreentimeManager.sln --configuration Release --output ./publish /p:GenerateFullPaths=true /consoleloggerparameters:NoSummary /p:DebugType=None /p:DebugSymbols=false /p:GenerateDependencyFile=false /p:GenerateDocumentationFile=false
+        run: dotnet publish Jellyfin.Plugin.ScreentimeManager.sln --configuration Release --output ./publish /p:GenerateFullPaths=true /consoleloggerparameters:NoSummary
         
       - name: Zip Release Artifact
         run: |
           cd publish
+          rm -f *.pdb *.deps.json *.xml
           zip -r ../Jellyfin.Plugin.ScreentimeManager.zip *
           cd ..
 
