@@ -25,6 +25,7 @@ public class ScreentimeTracker : IHostedService, IDisposable
     private readonly ILibraryManager _libraryManager;
     private readonly ILogger<ScreentimeTracker> _logger;
     private readonly string _stateFilePath;
+    private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
     /// Tracks usage: UserId -> (LibraryId -> Minutes). Global time is tracked with LibraryId = "Global".
@@ -52,13 +53,14 @@ public class ScreentimeTracker : IHostedService, IDisposable
         _sessionManager = sessionManager;
         _libraryManager = libraryManager;
         _logger = logger;
+        _jsonSerializerOptions = new JsonSerializerOptions { WriteIndented = true, IncludeFields = true, };
         _usageState = new ConcurrentDictionary<string, ConcurrentDictionary<string, double>>();
         _sessionStartTimes = new ConcurrentDictionary<string, DateTime>();
+        _lastResetTimes = new ConcurrentDictionary<string, DateTime>();
 
         _stateFilePath = Path.Combine(Plugin.Instance!.DataFolderPath, "ScreentimeState.json");
         LoadState();
 
-        _lastResetTimes = new ConcurrentDictionary<string, DateTime>();
         Instance = this;
     }
 
@@ -123,25 +125,58 @@ public class ScreentimeTracker : IHostedService, IDisposable
         }
     }
 
-    private string? GetLibraryId(BaseItem? item)
+    private string? GetLibraryId(BaseItem? item, bool debugTest = false)
     {
         if (item == null)
         {
             return null;
         }
 
+        if (!string.IsNullOrWhiteSpace(item.Path))
+        {
+            try
+            {
+                var virtualFolders = _libraryManager.GetVirtualFolders();
+                foreach (var vf in virtualFolders)
+                {
+                    if (vf.Locations != null)
+                    {
+                        foreach (var loc in vf.Locations)
+                        {
+                            if (string.IsNullOrWhiteSpace(loc))
+                            {
+                                continue;
+                            }
+
+                            if (item.Path.Equals(loc, StringComparison.OrdinalIgnoreCase) ||
+                                item.Path.StartsWith(loc + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                                item.Path.StartsWith(loc + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return vf.Name;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error checking VirtualFolders for item path {Path}", item.Path);
+            }
+        }
+
+        // Fallback: Crawl ParentId to RootFolder to get the topmost physical object's name
         var current = item;
         while (current != null && current.ParentId != Guid.Empty)
         {
             if (current.ParentId == _libraryManager.RootFolder.Id)
             {
-                return current.Id.ToString("N");
+                return current.Name;
             }
 
             current = _libraryManager.GetItemById(current.ParentId);
         }
 
-        return current?.Id.ToString("N");
+        return current?.Name;
     }
 
     private void OnPlaybackStart(object? sender, PlaybackProgressEventArgs e)
@@ -157,7 +192,7 @@ public class ScreentimeTracker : IHostedService, IDisposable
 
         CheckAndResetLimits(userId);
 
-        if (IsLimitExceeded(userId, GetLibraryId(e.Item)))
+        if (IsLimitExceeded(userId, GetLibraryId(e.Item, true)))
         {
             StopPlayback(session, "Screen time limit exceeded.");
             return;
@@ -186,6 +221,7 @@ public class ScreentimeTracker : IHostedService, IDisposable
             _sessionStartTimes[sessionId] = now;
 
             string? libraryId = GetLibraryId(e.Item);
+
             AddUsage(userId, libraryId, delta.TotalMinutes);
 
             if (IsLimitExceeded(userId, libraryId))
@@ -266,7 +302,6 @@ public class ScreentimeTracker : IHostedService, IDisposable
 
     private void StopPlayback(SessionInfo session, string reason)
     {
-        _logger.LogWarning("Stopping playback for user {UserId}. Reason: {Reason}", session.UserId, reason);
         var msg = new MessageCommand
         {
             Header = "Screentime Manager",

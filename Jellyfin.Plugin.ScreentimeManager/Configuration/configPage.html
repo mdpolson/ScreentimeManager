@@ -1,57 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <title>Screentime Manager</title>
 </head>
+
 <body>
-    <div id="ScreentimeConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+    <div id="ScreentimeConfigPage" data-role="page" class="page type-interior pluginConfigurationPage"
+        data-require="emby-input,emby-button,emby-select,emby-checkbox">
         <div data-role="content">
             <div class="content-primary">
                 <h1>Screentime Manager</h1>
                 <form id="ScreentimeConfigForm">
                     <div class="selectContainer">
                         <label class="selectLabel" for="UserSelect">Select User</label>
-                        <select is="emby-select" id="UserSelect" name="UserSelect" class="emby-select-withcolor emby-select">
+                        <select id="UserSelect" name="UserSelect" class="emby-input"
+                            style="appearance: auto; -webkit-appearance: auto; height: 2.5em; padding: 0.5em; cursor: pointer;">
                         </select>
                     </div>
 
-                    <div id="UserSettingsArea" style="display:none;">
+                    <div id="UserSettingsArea" style="display:none; margin-top:2em;">
                         <h2>User Settings</h2>
-                        
+
                         <div class="selectContainer">
                             <label class="selectLabel" for="ResetInterval">Reset Interval</label>
-                            <select is="emby-select" id="ResetInterval" name="ResetInterval" class="emby-select-withcolor emby-select">
-                                <option value="0">Daily</option>
-                                <option value="1">Weekly</option>
+                            <select id="ResetInterval" name="ResetInterval" class="emby-input"
+                                style="appearance: auto; -webkit-appearance: auto; height: 2.5em; padding: 0.5em; cursor: pointer;">
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
                             </select>
                         </div>
 
                         <h2>Global Limit</h2>
-                        <div class="checkboxContainer checkboxContainer-withDescription">
-                            <label class="emby-checkbox-label">
-                                <input id="IsGlobalLimitEnabled" name="IsGlobalLimitEnabled" type="checkbox" is="emby-checkbox" />
+                        <div class="checkboxContainer" style="margin-bottom: 2em;">
+                            <label
+                                style="display: flex; align-items: center; gap: 0.5em; cursor: pointer; font-size: 1.1em;">
+                                <input id="IsGlobalLimitEnabled" name="IsGlobalLimitEnabled" type="checkbox"
+                                    style="appearance: auto; -webkit-appearance: auto; width: 1.5em; height: 1.5em; cursor: pointer;" />
                                 <span>Enable Global Screen Time Limit</span>
                             </label>
                         </div>
                         <div class="inputContainer" style="display:flex; gap:1em;">
                             <div style="flex:1;">
-                                <label class="inputLabel inputLabelUnfocused" for="GlobalHours">Hours</label>
-                                <input id="GlobalHours" name="GlobalHours" type="number" is="emby-input" min="0" value="0" />
+                                <label class="inputLabel inputLabelUnfocused" for="GlobalHours">Total Hours</label>
+                                <input id="GlobalHours" name="GlobalHours" type="number" class="emby-input" min="0"
+                                    value="0" />
                             </div>
                             <div style="flex:1;">
-                                <label class="inputLabel inputLabelUnfocused" for="GlobalMinutes">Minutes</label>
-                                <input id="GlobalMinutes" name="GlobalMinutes" type="number" is="emby-input" min="0" max="59" value="0" />
+                                <label class="inputLabel inputLabelUnfocused" for="GlobalMinutes">Total Minutes</label>
+                                <input id="GlobalMinutes" name="GlobalMinutes" type="number" class="emby-input" min="0"
+                                    max="59" value="0" />
                             </div>
                         </div>
-                        <div id="GlobalUsageText" class="fieldDescription" style="margin-bottom: 2em; color: darkorange;"></div>
+                        <div id="GlobalUsageText" class="fieldDescription"
+                            style="margin-bottom: 2em; color: darkorange;"></div>
 
                         <h2>Library Limits</h2>
                         <div id="LibraryLimitsContainer"></div>
 
-                        <div>
+                        <div style="margin-top: 2em;">
                             <button is="emby-button" type="submit" class="raised button-submit block emby-button">
-                                <span>Save</span>
+                                <span>Save Rules</span>
                             </button>
                         </div>
                     </div>
@@ -76,12 +86,12 @@
 
             function renderUserSettings() {
                 if (!pluginConfig) return;
-                
-                var userRule = pluginConfig.UserRules.find(r => r.UserId === currentUserId);
+
+                var userRule = pluginConfig.UserRules.find(function (r) { return r.UserId === currentUserId; });
                 if (!userRule) {
                     userRule = {
                         UserId: currentUserId,
-                        ResetInterval: 0,
+                        ResetInterval: "Daily",
                         IsGlobalLimitEnabled: false,
                         GlobalTimeLimitMinutes: 0,
                         LibraryRules: []
@@ -89,9 +99,9 @@
                     pluginConfig.UserRules.push(userRule);
                 }
 
-                document.querySelector('#ResetInterval').value = userRule.ResetInterval;
+                document.querySelector('#ResetInterval').value = userRule.ResetInterval || "Daily";
                 document.querySelector('#IsGlobalLimitEnabled').checked = userRule.IsGlobalLimitEnabled;
-                
+
                 var globalH = Math.floor(userRule.GlobalTimeLimitMinutes / 60);
                 var globalM = userRule.GlobalTimeLimitMinutes % 60;
                 document.querySelector('#GlobalHours').value = globalH;
@@ -107,11 +117,11 @@
                 var container = document.querySelector('#LibraryLimitsContainer');
                 container.innerHTML = '';
 
-                currentUserViews.forEach(function(view) {
-                    var rule = userRule.LibraryRules.find(r => r.LibraryId === view.Id);
+                currentUserViews.forEach(function (view) {
+                    var rule = userRule.LibraryRules.find(function (r) { return r.LibraryId === view.Name; });
                     if (!rule) {
                         rule = {
-                            LibraryId: view.Id,
+                            LibraryId: view.Name,
                             IsEnabled: false,
                             TimeLimitMinutes: 0
                         };
@@ -120,32 +130,32 @@
 
                     var libH = Math.floor(rule.TimeLimitMinutes / 60);
                     var libM = rule.TimeLimitMinutes % 60;
-                    
-                    var usageMin = (currentUserUsage && currentUserUsage[view.Id]) ? currentUserUsage[view.Id] : 0;
-                    var usageStr = "Currently watched: " + renderHoursMinutes(usageMin);
 
-                    var html = `
-                        <div class="paperList" style="padding: 1em; margin-bottom: 1em; background: rgba(0,0,0,0.1); border-radius: 5px;">
-                            <h3>${view.Name}</h3>
-                            <div class="checkboxContainer checkboxContainer-withDescription">
-                                <label class="emby-checkbox-label">
-                                    <input id="chk_${view.Id}" type="checkbox" is="emby-checkbox" ${rule.IsEnabled ? 'checked' : ''} />
-                                    <span>Enable Screen Time Limit for ${view.Name}</span>
-                                </label>
-                            </div>
-                            <div class="inputContainer" style="display:flex; gap:1em;">
-                                <div style="flex:1;">
-                                    <label class="inputLabel inputLabelUnfocused">Hours</label>
-                                    <input id="hrs_${view.Id}" type="number" is="emby-input" min="0" value="${libH}" />
-                                </div>
-                                <div style="flex:1;">
-                                    <label class="inputLabel inputLabelUnfocused">Minutes</label>
-                                    <input id="mins_${view.Id}" type="number" is="emby-input" min="0" max="59" value="${libM}" />
-                                </div>
-                            </div>
-                            <div class="fieldDescription" style="color: darkorange;">${usageStr}</div>
-                        </div>
-                    `;
+                    var usageMin = (currentUserUsage && currentUserUsage[view.Name]) ? currentUserUsage[view.Name] : 0;
+                    var usageStr = "Currently watched: " + renderHoursMinutes(usageMin);
+                    var checkedAttr = rule.IsEnabled ? 'checked="checked"' : '';
+
+                    var html = '<div class="paperList" style="padding: 1.5em; margin-bottom: 1.5em; background: rgba(0,0,0,0.1); border-radius: 5px;">' +
+                        '<h3 style="margin-top: 0;">' + view.Name + '</h3>' +
+                        '<div class="checkboxContainer" style="margin-bottom: 2em;">' +
+                        '<label style="display: flex; align-items: center; gap: 0.5em; cursor: pointer;">' +
+                        '<input id="chk_' + view.Id + '" type="checkbox" ' + checkedAttr + ' style="appearance: auto; -webkit-appearance: auto; width: 1.5em; height: 1.5em; cursor: pointer;" />' +
+                        '<span>Enable Screen Time Limit for ' + view.Name + '</span>' +
+                        '</label>' +
+                        '</div>' +
+                        '<div class="inputContainer" style="display:flex; gap:1em;">' +
+                        '<div style="flex:1;">' +
+                        '<label class="inputLabel inputLabelUnfocused">Hours</label>' +
+                        '<input id="hrs_' + view.Id + '" type="number" class="emby-input" min="0" value="' + libH + '" />' +
+                        '</div>' +
+                        '<div style="flex:1;">' +
+                        '<label class="inputLabel inputLabelUnfocused">Minutes</label>' +
+                        '<input id="mins_' + view.Id + '" type="number" class="emby-input" min="0" max="59" value="' + libM + '" />' +
+                        '</div>' +
+                        '</div>' +
+                        '<div class="fieldDescription" style="color: darkorange; font-weight: bold; margin-top: 0.5em;">' + usageStr + '</div>' +
+                        '</div>';
+
                     container.innerHTML += html;
                 });
 
@@ -157,23 +167,34 @@
                 currentUserId = select.options[select.selectedIndex].value;
                 if (!currentUserId) return;
 
+                // console.log("ScreentimeManager: Loading rules for user:", currentUserId);
                 Dashboard.showLoadingMsg();
-                ApiClient.getUserViews({ userId: currentUserId }).then(function (result) {
+                ApiClient.getJSON(ApiClient.getUrl('Users/' + currentUserId + '/Views')).then(function (result) {
                     currentUserViews = result.Items;
-                    ApiClient.getJSON(ApiClient.getUrl('ScreentimeManager/Usage/' + currentUserId)).then(function(usageResult) {
+                    // console.log("ScreentimeManager: Fetched " + result.Items.length + " library views for user.");
+
+                    ApiClient.getJSON(ApiClient.getUrl('ScreentimeManager/Usage/' + currentUserId)).then(function (usageResult) {
                         currentUserUsage = usageResult;
+                        // console.log("ScreentimeManager: Fetched Usage:", usageResult);
                         renderUserSettings();
                         Dashboard.hideLoadingMsg();
-                    }).catch(function() {
+                    }).catch(function (e) {
+                        console.error("ScreentimeManager: Failed to fetch Usage: ", e);
                         currentUserUsage = {};
                         renderUserSettings();
                         Dashboard.hideLoadingMsg();
                     });
+                }).catch(function (e) {
+                    console.error("ScreentimeManager: Failed to fetch Views: ", e);
+                    currentUserViews = [];
+                    currentUserUsage = {};
+                    renderUserSettings();
+                    Dashboard.hideLoadingMsg();
                 });
             }
 
             document.querySelector('#ScreentimeConfigPage')
-                .addEventListener('pageshow', function() {
+                .addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
                     ApiClient.getPluginConfiguration(ScreentimeConfig.pluginUniqueId).then(function (config) {
                         pluginConfig = config;
@@ -203,37 +224,38 @@
             document.querySelector('#UserSelect').addEventListener('change', loadSelectedUser);
 
             document.querySelector('#ScreentimeConfigForm')
-                .addEventListener('submit', function(e) {
-                e.preventDefault();
-                Dashboard.showLoadingMsg();
+                .addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
 
-                var userRule = pluginConfig.UserRules.find(r => r.UserId === currentUserId);
-                if (userRule) {
-                    userRule.ResetInterval = parseInt(document.querySelector('#ResetInterval').value);
-                    userRule.IsGlobalLimitEnabled = document.querySelector('#IsGlobalLimitEnabled').checked;
-                    var gHours = parseInt(document.querySelector('#GlobalHours').value) || 0;
-                    var gMins = parseInt(document.querySelector('#GlobalMinutes').value) || 0;
-                    userRule.GlobalTimeLimitMinutes = (gHours * 60) + gMins;
+                    var userRule = pluginConfig.UserRules.find(function (r) { return r.UserId === currentUserId; });
+                    if (userRule) {
+                        userRule.ResetInterval = document.querySelector('#ResetInterval').value;
+                        userRule.IsGlobalLimitEnabled = document.querySelector('#IsGlobalLimitEnabled').checked;
+                        var gHours = parseInt(document.querySelector('#GlobalHours').value) || 0;
+                        var gMins = parseInt(document.querySelector('#GlobalMinutes').value) || 0;
+                        userRule.GlobalTimeLimitMinutes = (gHours * 60) + gMins;
 
-                    currentUserViews.forEach(function(view) {
-                        var rule = userRule.LibraryRules.find(r => r.LibraryId === view.Id);
-                        if (rule) {
-                            var chk = document.querySelector('#chk_' + view.Id);
-                            rule.IsEnabled = chk ? chk.checked : false;
-                            var lHours = parseInt(document.querySelector('#hrs_' + view.Id).value) || 0;
-                            var lMins = parseInt(document.querySelector('#mins_' + view.Id).value) || 0;
-                            rule.TimeLimitMinutes = (lHours * 60) + lMins;
-                        }
+                        currentUserViews.forEach(function (view) {
+                            var rule = userRule.LibraryRules.find(function (r) { return r.LibraryId === view.Name; });
+                            if (rule) {
+                                var chk = document.querySelector('#chk_' + view.Id);
+                                rule.IsEnabled = chk ? chk.checked : false;
+                                var lHours = parseInt(document.querySelector('#hrs_' + view.Id).value) || 0;
+                                var lMins = parseInt(document.querySelector('#mins_' + view.Id).value) || 0;
+                                rule.TimeLimitMinutes = (lHours * 60) + lMins;
+                            }
+                        });
+                    }
+
+                    ApiClient.updatePluginConfiguration(ScreentimeConfig.pluginUniqueId, pluginConfig).then(function (result) {
+                        Dashboard.processPluginConfigurationUpdateResult(result);
                     });
-                }
 
-                ApiClient.updatePluginConfiguration(ScreentimeConfig.pluginUniqueId, pluginConfig).then(function (result) {
-                    Dashboard.processPluginConfigurationUpdateResult(result);
+                    return false;
                 });
-
-                return false;
-            });
         </script>
     </div>
 </body>
+
 </html>
