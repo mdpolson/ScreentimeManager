@@ -1,0 +1,20 @@
+[
+    {
+        "category": "General",
+        "guid": "2e773ab9-a346-4850-b13b-45fca7246ec4",
+        "name": "ScreentimeManager",
+        "description": "Enforces daily or weekly screen time limits per user globally or per library in Jellyfin.",
+        "owner": "mdpolson",
+        "overview": "Manage and restrict screentime limits in Jellyfin",
+        "versions": [
+            {
+                "checksum": "0b8a4c794c1451310954a1109f8aa01c",
+                "changelog": "Initial Release",
+                "targetAbi": "10.9.11.0",
+                "sourceUrl": "https://github.com/mdpolson/ScreentimeManager/releases/download/v1.0.0/Jellyfin.Plugin.ScreentimeManager.zip",
+                "timestamp": "2026-04-22T03:57:00Z",
+                "version": "1.0.0.0"
+            }
+        ]
+    }
+]
